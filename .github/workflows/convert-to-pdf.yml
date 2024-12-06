@@ -1,0 +1,32 @@
+name: Build LaTeX PDF with Bibliography
+
+on:
+  push:
+    paths:
+      - 'DividedCities_pp/paper.tex'
+      - 'DividedCities_pp/reference.bib'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install TeX Live
+      run: sudo apt-get update && sudo apt-get install -y texlive-full
+
+    - name: Compile LaTeX with Bibliography
+      run: |
+        cd DividedCities_pp                      # Navigate to the folder containing files
+        pdflatex -interaction=nonstopmode paper.tex
+        bibtex paper
+        pdflatex -interaction=nonstopmode paper.tex
+        pdflatex -interaction=nonstopmode paper.tex
+
+    - name: Upload PDF
+      uses: actions/upload-artifact@v3
+      with:
+        name: Compiled-Paper                          
+        path: DividedCities_pp/paper.pdf              # Correct relative path to the PDF
