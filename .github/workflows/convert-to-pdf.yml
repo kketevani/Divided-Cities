@@ -26,7 +26,7 @@ jobs:
         pdflatex -interaction=nonstopmode paper.tex
 
     - name: Upload PDF
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Compiled-Paper                          
         path: DividedCities_pp/paper.pdf              # Correct relative path to the PDF
