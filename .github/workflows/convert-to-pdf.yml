@@ -32,9 +32,10 @@ jobs:
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Upload PDF as Artifact (Not Zipped)
-      uses: actions/upload-artifact@v4
-      with:
-        name: Compiled-Paper
-        path: DividedCities_pp/paper.pdf
-        if-no-files-found: error
+    - name: Commit and Push PDF to Repository
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add DividedCities_pp/paper.pdf
+        git commit -m "Auto-generate PDF and push"
+        git push origin HEAD:pdf-output
