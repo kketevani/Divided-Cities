@@ -14,19 +14,25 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Install TeX Live
-      run: sudo apt-get update && sudo apt-get install -y texlive-full
+    - name: Install Minimal TeX Live
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-latex-recommended texlive-bibtex-extra \
+                                texlive-fonts-recommended latexmk
 
     - name: Compile LaTeX with Bibliography
       run: |
-        cd DividedCities_pp                      # Navigate to the folder containing files
+        set -e                                 # Exit on error
+        cd DividedCities_pp
         pdflatex -interaction=nonstopmode paper.tex
         bibtex paper
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Upload PDF
+    - name: Upload PDF as Artifact (Not Zipped)
       uses: actions/upload-artifact@v4
       with:
-        name: Compiled-Paper                          
-        path: DividedCities_pp/paper.pdf              # Correct relative path to the PDF
+        name: Compiled-Paper
+        path: DividedCities_pp/paper.pdf        # Upload the single PDF file
+        if-no-files-found: error                # Error out if PDF isn't found
+        retention-days: 7                       # Optional: Adjust retention days
