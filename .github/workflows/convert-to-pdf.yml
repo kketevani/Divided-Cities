@@ -22,7 +22,7 @@ jobs:
 
     - name: Compile LaTeX with Bibliography
       run: |
-        set -e                                 # Exit on error
+        set -e                                
         cd DividedCities_pp
         pdflatex -interaction=nonstopmode paper.tex
         bibtex paper
