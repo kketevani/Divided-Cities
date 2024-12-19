@@ -52,4 +52,4 @@ jobs:
       run: |
         gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    < when I open paper.pdf it automatically downloads, is it possible to avoid this
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
