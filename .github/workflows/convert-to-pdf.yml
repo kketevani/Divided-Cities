@@ -1,10 +1,11 @@
-name: Build LaTeX PDF and Create or Update Release
+name: Build LaTeX PDFs and Create or Update Release
 
 on:
   push:
     paths:
       - 'DividedCities_pp/paper.tex'
       - 'DividedCities_pp/reference.bib'
+      - 'DividedCities_pres/main.tex'
 
 jobs:
   build:
@@ -23,7 +24,7 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
-    - name: Compile LaTeX with Bibliography
+    - name: Compile LaTeX for Paper with Bibliography
       run: |
         set -e
         cd DividedCities_pp
@@ -31,6 +32,13 @@ jobs:
         bibtex paper
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
+
+    - name: Compile LaTeX for Presentation
+      run: |
+        set -e
+        cd DividedCities_pres
+        pdflatex -interaction=nonstopmode main.tex
+        pdflatex -interaction=nonstopmode main.tex
 
     - name: Install GitHub CLI
       run: |
@@ -41,15 +49,16 @@ jobs:
       run: |
         if ! gh release view v1.0 > /dev/null 2>&1; then
           echo "Release v1.0 does not exist. Creating it now."
-          gh release create v1.0 --notes "Compiled paper release."
+          gh release create v1.0 --notes "Compiled paper and presentation release."
         else
           echo "Release v1.0 exists. Proceeding to update it."
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload PDF to Release
+    - name: Upload PDFs to Release
       run: |
         gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
+        gh release upload v1.0 DividedCities_pres/presentation.pdf --clobber
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
