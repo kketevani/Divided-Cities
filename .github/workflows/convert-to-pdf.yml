@@ -23,6 +23,11 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
+    - name: Install GitHub CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gh
+
     - name: Compile LaTeX with Bibliography
       run: |
         set -e
@@ -35,7 +40,7 @@ jobs:
     - name: Create GitHub Release
       uses: actions/create-release@v1
       with:
-        tag_name: v1.0  # Adjust version as needed
+        tag_name: v1.0
         release_name: "Compiled Paper PDF"
         draft: false
         prerelease: false
