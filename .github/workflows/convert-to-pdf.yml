@@ -1,4 +1,4 @@
-name: Build LaTeX PDF with Bibliography
+name: Build LaTeX PDF with Bibliography and Upload as Release Asset
 
 on:
   push:
@@ -32,10 +32,18 @@ jobs:
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Commit and Push PDF to Repository
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      with:
+        tag_name: v1.0  # Adjust version as needed
+        release_name: "Compiled Paper PDF"
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload PDF to Release
       run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "github-actions@github.com"
-        git add DividedCities_pp/paper.pdf
-        git commit -m "Auto-generate PDF and push"
-        git push origin HEAD:pdf-output
+        gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
