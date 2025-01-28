@@ -1,4 +1,4 @@
-name: Build LaTeX PDF and Update Release & Repo
+name: Build LaTeX PDF, Update Release, and Commit to Public Repo
 
 on:
   push:
@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Check out the repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
+    # Step 2: Install LaTeX (TeX Live)
     - name: Install TeX Live
       run: |
         sudo apt-get update
@@ -23,6 +25,7 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
+    # Step 3: Compile LaTeX and bibliography
     - name: Compile LaTeX with Bibliography
       run: |
         set -e
@@ -32,16 +35,11 @@ jobs:
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Commit PDF to Repository
+    # Step 4: Upload PDF to the Release
+    - name: Install GitHub CLI
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        mv DividedCities_pp/paper.pdf public/paper.pdf
-        git add public/paper.pdf
-        git commit -m "Update compiled PDF [ci skip]"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        sudo apt-get update
+        sudo apt-get install -y gh
 
     - name: Check if Release Exists and Create if Necessary
       run: |
@@ -57,5 +55,26 @@ jobs:
     - name: Upload PDF to Release
       run: |
         gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Step 5: Download PDF from the Release
+    - name: Download PDF from Release
+      run: |
+        gh release download v1.0 --pattern "paper.pdf" --dir .
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Step 6: Push PDF to Public Repository
+    - name: Clone Public Repository
+      run: |
+        git clone https://github.com/kketevani/public.git public-repo
+        mv paper.pdf public-repo/paper.pdf
+        cd public-repo
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add paper.pdf
+        git commit -m "Update paper.pdf from build [ci skip]"
+        git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
