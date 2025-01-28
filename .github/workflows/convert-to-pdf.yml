@@ -1,4 +1,4 @@
-name: Build LaTeX PDF, Update Release, and Commit to Public Repo
+name: Build LaTeX PDF, Update Release, and Push to Public Repo
 
 on:
   push:
@@ -57,10 +57,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Step 5: Clone Public Repository and Push PDF
-    - name: Clone Public Repository
+    # Step 5: Push PDF to Public Repository
+    - name: Push to Public Repository
       run: |
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/kketevani/public.git public-repo
+        git clone https://github.com/kketevani/public.git public-repo
         mv DividedCities_pp/paper.pdf public-repo/paper.pdf
         cd public-repo
         git config --global user.name "github-actions[bot]"
@@ -68,5 +68,3 @@ jobs:
         git add paper.pdf
         git commit -m "Update paper.pdf from build [ci skip]"
         git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
