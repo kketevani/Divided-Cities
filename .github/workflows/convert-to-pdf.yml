@@ -6,6 +6,9 @@ on:
       - 'DividedCities_pp/paper.tex'
       - 'DividedCities_pp/reference.bib'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -60,11 +63,17 @@ jobs:
     # Step 5: Push PDF to Public Repository
     - name: Push to Public Repository
       run: |
-        git clone https://github.com/kketevani/public.git public-repo
+        # Clone the public repository with GITHUB_TOKEN for authentication
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/kketevani/public.git public-repo
+        # Move the compiled PDF to the repository
         mv DividedCities_pp/paper.pdf public-repo/paper.pdf
         cd public-repo
+        # Configure Git
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        # Commit and push changes
         git add paper.pdf
-        git commit -m "Update paper.pdf from build [ci skip]"
+        git commit -m "Update paper.pdf from build [ci skip]" || echo "No changes to commit"
         git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
