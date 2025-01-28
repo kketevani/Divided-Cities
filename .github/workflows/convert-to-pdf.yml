@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Check out the repository
+    # Step 1: Checkout Repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    # Step 2: Install LaTeX (TeX Live)
+    # Step 2: Install TeX Live
     - name: Install TeX Live
       run: |
         sudo apt-get update
@@ -25,17 +25,16 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
-    # Step 3: Compile LaTeX and bibliography
+    # Step 3: Compile LaTeX Document
     - name: Compile LaTeX with Bibliography
       run: |
-        set -e
         cd DividedCities_pp
         pdflatex -interaction=nonstopmode paper.tex
         bibtex paper
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    # Step 4: Upload PDF to the Release
+    # Step 4: Update GitHub Release
     - name: Install GitHub CLI
       run: |
         sudo apt-get update
@@ -58,18 +57,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Step 5: Download PDF from the Release
-    - name: Download PDF from Release
-      run: |
-        gh release download v1.0 --pattern "paper.pdf" --dir .
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Step 6: Push PDF to Public Repository
+    # Step 5: Clone Public Repository and Push PDF
     - name: Clone Public Repository
       run: |
-        git clone https://github.com/kketevani/public.git public-repo
-        mv paper.pdf public-repo/paper.pdf
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/kketevani/public.git public-repo
+        mv DividedCities_pp/paper.pdf public-repo/paper.pdf
         cd public-repo
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
