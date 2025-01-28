@@ -1,4 +1,4 @@
-name: Build LaTeX PDF and Create or Update Release
+name: Build LaTeX PDF and Update Release & Repo
 
 on:
   push:
@@ -32,10 +32,16 @@ jobs:
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Install GitHub CLI
+    - name: Commit PDF to Repository
       run: |
-        sudo apt-get update
-        sudo apt-get install -y gh
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        mv DividedCities_pp/paper.pdf public/paper.pdf
+        git add public/paper.pdf
+        git commit -m "Update compiled PDF [ci skip]"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Check if Release Exists and Create if Necessary
       run: |
