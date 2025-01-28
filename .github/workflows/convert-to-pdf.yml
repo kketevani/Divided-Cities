@@ -1,4 +1,4 @@
-name: Build LaTeX PDF, Update Release, and Push to Public Repo
+name: Build LaTeX PDF and Create or Update Release
 
 on:
   push:
@@ -6,19 +6,14 @@ on:
       - 'DividedCities_pp/paper.tex'
       - 'DividedCities_pp/reference.bib'
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout Repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    # Step 2: Install TeX Live
     - name: Install TeX Live
       run: |
         sudo apt-get update
@@ -28,16 +23,15 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
-    # Step 3: Compile LaTeX Document
     - name: Compile LaTeX with Bibliography
       run: |
+        set -e
         cd DividedCities_pp
         pdflatex -interaction=nonstopmode paper.tex
         bibtex paper
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    # Step 4: Update GitHub Release
     - name: Install GitHub CLI
       run: |
         sudo apt-get update
@@ -57,23 +51,5 @@ jobs:
     - name: Upload PDF to Release
       run: |
         gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Step 5: Push PDF to Public Repository
-    - name: Push to Public Repository
-      run: |
-        # Clone the public repository with GITHUB_TOKEN for authentication
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/kketevani/public.git public-repo
-        # Move the compiled PDF to the repository
-        mv DividedCities_pp/paper.pdf public-repo/paper.pdf
-        cd public-repo
-        # Configure Git
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        # Commit and push changes
-        git add paper.pdf
-        git commit -m "Update paper.pdf from build [ci skip]" || echo "No changes to commit"
-        git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
