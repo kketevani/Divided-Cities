@@ -1,4 +1,4 @@
-name: Build LaTeX PDF and Create or Update Release
+name: Build LaTeX PDF and Publish to Public Repo
 
 on:
   push:
@@ -6,14 +6,19 @@ on:
       - 'DividedCities_pp/paper.tex'
       - 'DividedCities_pp/reference.bib'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout the Repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
+    # Step 2: Install TeX Live
     - name: Install TeX Live
       run: |
         sudo apt-get update
@@ -23,33 +28,29 @@ jobs:
                                 texlive-fonts-recommended \
                                 latexmk
 
+    # Step 3: Compile the LaTeX Document
     - name: Compile LaTeX with Bibliography
       run: |
-        set -e
         cd DividedCities_pp
         pdflatex -interaction=nonstopmode paper.tex
         bibtex paper
         pdflatex -interaction=nonstopmode paper.tex
         pdflatex -interaction=nonstopmode paper.tex
 
-    - name: Install GitHub CLI
+    # Step 4: Push the PDF to the Public Repository
+    - name: Push PDF to Public Repository
       run: |
-        sudo apt-get update
-        sudo apt-get install -y gh
-
-    - name: Check if Release Exists and Create if Necessary
-      run: |
-        if ! gh release view v1.0 > /dev/null 2>&1; then
-          echo "Release v1.0 does not exist. Creating it now."
-          gh release create v1.0 --notes "Compiled paper release."
-        else
-          echo "Release v1.0 exists. Proceeding to update it."
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload PDF to Release
-      run: |
-        gh release upload v1.0 DividedCities_pp/paper.pdf --clobber
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Clone the public repository with authentication
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/kketevani/public.git public-repo
+        # Move the compiled PDF to the repository
+        cp DividedCities_pp/paper.pdf public-repo/paper.pdf
+        cd public-repo
+        # Configure Git
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        # Commit and push changes
+        git add paper.pdf
+        git commit -m "Update paper.pdf from build [ci skip]" || echo "No changes to commit"
+        git push origin main
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
